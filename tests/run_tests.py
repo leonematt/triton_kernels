@@ -8,6 +8,7 @@ from pathlib import Path
 TEST_FILES = [
     "test_elementwise.py",
     "test_matmul.py",
+    "test_relu.py",
     "test_layernorm.py",
     "test_activation.py",
     "test_softmax.py",

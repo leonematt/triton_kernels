@@ -1,3 +1,4 @@
+import cmd
 import pytest
 import torch
 import nexus
@@ -45,9 +46,7 @@ def test_matmul(runtime_and_device, variant):
     b = torch.randn((K, N), dtype=torch.float32)
     c = torch.zeros((M, N), dtype=torch.float32)
 
-    a_tile_size = BLOCK_M * BLOCK_K * 4  # 4 bytes per float
-    b_tile_size = BLOCK_K * BLOCK_N * 4
-    shared_mem = 2 * (a_tile_size + b_tile_size)
+    shared_mem = 4 * 4 * BLOCK_K * (BLOCK_M + BLOCK_N)
 
     # Create device buffers
     nb_a = dev.create_buffer(a)
@@ -93,7 +92,8 @@ def test_matmul(runtime_and_device, variant):
     cmd.set_arg(9, stride_bn)     # stride_bn
     cmd.set_arg(10, stride_cm)    # stride_cm
     cmd.set_arg(11, stride_cn)    # stride_cn
-    cmd.set_arg(12, 0)            # metadata pointer
+    cmd.set_arg(12, 0)  # metadata pointer (you have this)
+    cmd.set_arg(13, 0)  # second metadata pointer (ADD THIS)
     
     # Calculate grid size
     grid_m = (M + BLOCK_M - 1) // BLOCK_M
@@ -119,6 +119,7 @@ def test_matmul(runtime_and_device, variant):
     print(f"Result[0,0]: {c[0, 0]}")
     print(f"Expected[0,0]: {expected[0, 0]}")
     
+    max_diff = (c - expected).abs().max().item()
     assert torch.allclose(c, expected, rtol=1e-1, atol=1e-1), \
         f"Mismatch for M={BLOCK_M}, N={BLOCK_N}, K={BLOCK_K}.\n" \
         f"Max diff: {max_diff}"
