@@ -9,6 +9,8 @@ TEST_FILES = [
     "test_elementwise.py",
     "test_matmul.py",
     "test_relu.py",
+    "test_silu.py",
+    "test_gelu.py",
     "test_layernorm.py",
     "test_activation.py",
     "test_softmax.py",
